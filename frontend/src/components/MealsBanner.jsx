@@ -20,7 +20,7 @@ const MealsBanner = () => {
   const [isRetrying, setIsRetrying] = useState(false);
 
   // Load from env
-  const viteAPI = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Format today's date in Czech format
   const formattedDate = new Date().toLocaleDateString("cs-CZ", {
@@ -38,7 +38,7 @@ const MealsBanner = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${viteAPI}/api/obedy`);
+      const response = await fetch(`${apiUrl}/api/obedy`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);

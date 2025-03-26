@@ -11,12 +11,12 @@ function Obedy() {
   const [loading, setLoading] = useState(true);
 
   // Load from env
-  const viteAPI = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchMeals = async () => {
       try {
-        const response = await fetch(`${viteAPI}/api/obedy`);
+        const response = await fetch(`${apiUrl}/api/obedy`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
