@@ -20,15 +20,12 @@ const DayMealCard = ({ dayMeals }) => {
     return dateObj.toLocaleDateString("cs-CZ", options);
   };
 
-  const [infoVisible, setInfoVisible] = useState(null);
-
-  const toggleInfo = (id) => {
-    if (infoVisible === id) {
-      setInfoVisible(null);
-    } else {
-      setInfoVisible(id);
-    }
-  };
+  const sortedMeals = [...meals].sort((a, b) => {
+    // Extract numeric part from type, assuming types like "1", "2", etc.
+    const aNum = parseInt(a.type, 10) || 999; // Default to high number for non-numeric types
+    const bNum = parseInt(b.type, 10) || 999;
+    return aNum - bNum;
+  });
 
   return (
     <div className="bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-800">
@@ -64,9 +61,9 @@ const DayMealCard = ({ dayMeals }) => {
         </div>
       )}
 
-      {/* Meals Section */}
+      {/* Meals Section - USING sortedMeals INSTEAD OF meals */}
       <div className="divide-y divide-gray-700">
-        {meals.map((meal) => {
+        {sortedMeals.map((meal) => {
           const isSelected = orderedMeal && orderedMeal.id === meal.id;
           return (
             <div
@@ -80,12 +77,14 @@ const DayMealCard = ({ dayMeals }) => {
               <div className="flex items-center flex-1">
                 <div className="text-white">
                   <div>
-                    <span className="font-medium text-xs sm:text-sm md:text-base">
-                      Oběd {meal.type} -{" "}
-                    </span>
-                    <span className="font-medium text-xs sm:text-sm md:text-base">
-                      {meal.name}
-                    </span>
+                    <div>
+                      <span className="font-medium text-xs sm:text-sm md:text-base">
+                        {meal.type != 5 ? `Oběd ${meal.type} - ` : "Salát - "}
+                        <span className="font-medium text-xs sm:text-sm md:text-base">
+                          {meal.name}
+                        </span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import DayMealCard from "../components/DayMealCard";
 import { DatesProvider, DatePicker } from "@mantine/dates";
 import { Box, Text } from "@mantine/core";
+import { IconArrowUp } from "@tabler/icons-react";
 
 function Obedy() {
   const [meals, setMeals] = useState([]);
@@ -9,7 +10,7 @@ function Obedy() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  //load from env
+  // Load from env
   const viteAPI = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
