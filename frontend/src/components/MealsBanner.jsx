@@ -145,12 +145,12 @@ const MealsBanner = () => {
                 >
                   {hasOrderedToday ? (
                     <>
-                      Dnes objednáno
+                      Objednáno
                       <IconCircleCheck size={18} className="ml-2" />
                     </>
                   ) : (
                     <>
-                      Dnes neobjednáno
+                      Neobjednáno
                       <IconCircleX size={18} className="ml-2" />
                     </>
                   )}
