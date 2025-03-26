@@ -298,7 +298,7 @@ async function insertMeals(mealsData) {
             database_source: meal.database_source,
             order_end_time: meal.order_end_time,
             is_ordered: meal.is_ordered,
-            updated_at: new Date().toISOString(),
+            updated_at: new Date(),
           },
           {
             onConflict: "date,type,name",

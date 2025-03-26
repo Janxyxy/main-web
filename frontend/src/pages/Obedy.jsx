@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import MealCard from "../components/DayMealCard";
+import DayMealCard from "../components/DayMealCard";
+import { DatesProvider, DatePicker } from "@mantine/dates";
+import { Box, Text } from "@mantine/core";
 
 function Obedy() {
   const [meals, setMeals] = useState([]);
@@ -7,19 +9,19 @@ function Obedy() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //load from env
+  const viteAPI = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const fetchMeals = async () => {
-      console.log("Starting to fetch meals...");
       try {
-        const response = await fetch("http://localhost:3000/api/obedy");
-        console.log("Response status:", response.status);
+        const response = await fetch(`${viteAPI}/api/obedy`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Received data:", data);
         if (data && data.success && Array.isArray(data.data)) {
           setMeals(data.data);
         } else {
@@ -27,7 +29,7 @@ function Obedy() {
           setError("Received unexpected data format from server");
         }
       } catch (err) {
-        console.error("Error details:", err);
+        console.error("Error fetching meals:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -39,11 +41,21 @@ function Obedy() {
 
   useEffect(() => {
     if (meals.length > 0) {
+      // Get today's date at midnight for comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       // Group meals by date
       const mealsByDate = {};
 
       meals.forEach((meal) => {
         const date = meal.date;
+        const mealDate = new Date(date);
+
+        // Skip dates before today
+        if (mealDate < today) {
+          return;
+        }
 
         if (!mealsByDate[date]) {
           mealsByDate[date] = {
@@ -60,7 +72,7 @@ function Obedy() {
           mealsByDate[date].meals.push(meal);
 
           // Check if this is the ordered meal
-          if (meal.isOrdered) {
+          if (meal.is_ordered) {
             mealsByDate[date].orderedMeal = meal;
           }
         }
@@ -72,25 +84,38 @@ function Obedy() {
       );
 
       setGroupedMeals(sortedGroups);
-      console.log("Grouped meals:", sortedGroups);
     }
   }, [meals]);
 
   return (
-    <div className="flex flex-col">
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Meals</h1>
+    <div className="flex flex-col min-h-screen bg-gray-900">
+      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-6xl mx-auto w-full">
+        <h1 className="font-medium text-xl sm:text-2xl md:text-3xl mb-6 text-white">
+          Obědy
+        </h1>
 
-        {loading && <p>Loading meals...</p>}
-
-        {error && <p className="text-red-500">Error: {error}</p>}
-
-        {!loading && !error && meals.length === 0 && <p>No meals found.</p>}
-
+        {loading && (
+          <div className="flex justify-center p-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-900 border-l-4 border-red-500 p-4 rounded-md mb-6 text-white">
+            <p>Error: {error}</p>
+          </div>
+        )}
+        {!loading && !error && groupedMeals.length === 0 && (
+          <div className="bg-gray-800 border-l-4 border-purple-500 p-4 rounded-md text-white">
+            <p>
+              No meals found for today or upcoming days. Please check back
+              later.
+            </p>
+          </div>
+        )}
         {!loading && !error && groupedMeals.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groupedMeals.map((dateGroup, index) => (
-              <MealCard key={dateGroup.date || index} dateGroup={dateGroup} />
+          <div className="space-y-6">
+            {groupedMeals.map((dayMeals) => (
+              <DayMealCard key={dayMeals.date} dayMeals={dayMeals} />
             ))}
           </div>
         )}
