@@ -192,33 +192,38 @@ const MealsBanner = () => {
                 </div>
               </div>
             ) : hasOrderedToday && orderedMeal ? (
-              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-lg border border-white/10">
-                <div className="flex flex-wrap items-start text-white mb-2">
-                  <IconSoup
-                    size={18}
-                    className="mr-2 mt-0.5 text-purple-300 flex-shrink-0"
-                  />
-                  <div>
-                    <span className="font-medium mr-1 text-purple-200">
-                      Polévky:
+              <div className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+                {/* Soup information */}
+                <div className="flex mb-3">
+                  <div className="flex-1">
+                    <span className="text-purple-200 font-semibold mb-1 justify-start flex">
+                      <IconSoup
+                        size={20}
+                        className="text-purple-300 flex-shrink-0 mt-0.5 mr-3"
+                      />
+                      Polévky
                     </span>
-                    <span className="text-gray-300">
+                    <span className="text-gray-200 block">
                       {todaySoup?.name
                         ? todaySoup.name.replace(/,/g, " a")
                         : "Nejsou k dispozici"}
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-start text-white">
-                  <IconClipboardCheck
-                    size={18}
-                    className="mr-2 mt-0.5 text-green-300 flex-shrink-0"
-                  />
-                  <div>
-                    <span className="font-medium mr-1 text-green-200">
-                      Objednáno:
+
+                {/* Ordered meal information */}
+                <div className="flex">
+                  <div className="flex-1">
+                    <span className="text-purple-200 font-semibold mb-1 justify-start flex">
+                      <IconClipboardCheck
+                        size={20}
+                        className="text-green-300 flex-shrink-0 mt-0.5 mr-3"
+                      />
+                      Objednáno
                     </span>
-                    <span className="text-gray-300">{orderedMeal.name}</span>
+                    <span className="text-gray-200 block">
+                      {orderedMeal.name}
+                    </span>
                   </div>
                 </div>
               </div>
