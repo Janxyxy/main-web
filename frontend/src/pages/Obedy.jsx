@@ -16,7 +16,7 @@ function Obedy() {
   useEffect(() => {
     const fetchMeals = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/obedy`);
+        const response = await fetch(`${apiUrl}/api/meals/obedy`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

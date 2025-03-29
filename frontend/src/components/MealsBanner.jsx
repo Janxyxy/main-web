@@ -38,7 +38,7 @@ const MealsBanner = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${apiUrl}/api/obedy`);
+      const response = await fetch(`${apiUrl}/api/meals/obedy`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -231,7 +231,7 @@ const MealsBanner = () => {
               <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3">
                 <p className="text-red-300 font-medium flex items-center">
                   <IconAlertTriangle size={18} className="mr-2" />
-                  Dneska bez obědu :()
+                  Dneska bez obědu :(
                 </p>
               </div>
             )}

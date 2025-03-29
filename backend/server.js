@@ -23,4 +23,5 @@ cron.schedule("0 */6 * * *", async () => {
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server running at http://0.0.0.0:${port}`);
+  console.log("http://localhost:3000");
 });

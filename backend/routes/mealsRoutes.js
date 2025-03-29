@@ -5,6 +5,7 @@ const { supabase } = require("../lib/supabaseClient");
 // For production, these would come from environment variables
 const SID = process.env.SID;
 const cantine_number = process.env.CANTINE_NUMBER;
+const username = process.env.USER_NAME;
 
 /**
  * API ENDPOINTS
@@ -85,6 +86,193 @@ async function syncHandler(req, res) {
   }
 }
 
+router.get("/saveOrders", async (req, res) => {
+  // Test order data
+  const testOrders = [{ date: "2025-04-03", type: "1", pocet: "0" }]; // 03.4.2025
+
+  // Add testOrders to req.body
+  req.body = { orders: testOrders };
+
+  try {
+    const response = await saveOrdersHandler(req);
+
+    if (response && response.success) {
+      return res
+        .status(200)
+        .json({ message: "Save orders endpoint", data: response });
+    } else {
+      return res.status(500).json({
+        message: "Failed to save orders",
+        error: response?.error || "Unknown error",
+      });
+    }
+  } catch (error) {
+    console.error("Error in /saveOrders route:", error);
+    return res.status(500).json({
+      message: "An unexpected error occurred",
+      error: error.message || "Unknown error",
+    });
+  }
+});
+
+async function saveOrdersHandler(req) {
+  try {
+    // Get order data from request
+    const { orders } = req.body;
+
+    console.log("Received orders:", orders);
+
+    if (!orders || !Array.isArray(orders)) {
+      return {
+        success: false,
+        error: "Invalid request format. Expected an array of orders.",
+      };
+    }
+
+    // Utility function to escape XML
+    function escapeXml(xml) {
+      return xml
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, '\\"')
+        .replace(/'/g, "&apos;");
+    }
+
+    // Build XML payload
+    let xmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
+<VFPData>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="VFPData">
+        <xsd:element name="VFPData" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="rozpisobjednavek" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="datum" type="xsd:date" />
+                                <xsd:element name="druh">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="1" />
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element name="pocet">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:decimal">
+                                            <xsd:totalDigits value="5" />
+                                            <xsd:fractionDigits value="0" />
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+                <xsd:anyAttribute namespace="http://www.w3.org/XML/1998/namespace" processContents="lax" />
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>`;
+
+    // Format date function - convert from "YYYY-MM-DD" to "YYYY-MM-DD" (already in right format)
+    function formatDate(dateStr) {
+      return dateStr; // Already in correct format
+    }
+
+    // Add order entries to XML
+    for (const order of orders) {
+      const formattedDate = formatDate(order.date);
+      xmlPayload += `
+    <rozpisobjednavek>
+        <datum>${formattedDate}</datum>
+        <druh>${order.type}</druh>
+        <pocet>${order.pocet}</pocet>
+    </rozpisobjednavek>`;
+    }
+
+    // Close XML
+    xmlPayload += `
+</VFPData>`;
+
+    // Escape the XML payload
+    const escapedXmlPayload = escapeXml(xmlPayload);
+    finalXlm = '"' + escapedXmlPayload + '"';
+
+    console.log("Escaped XML Payload:", finalXlm);
+
+    const url = "https://app.strava.cz/api/saveOrders";
+
+    // Prepare headers
+    const headers = {
+      accept: "*/*",
+      "accept-encoding": "gzip, deflate, br, zstd",
+      "accept-language": "cs-CZ,cs;q=0.9",
+      "content-type": "text/plain;charset=UTF-8",
+      cookie: `NEXT_LOCALE=cs; cislo=${cantine_number}; jmeno=${username}; sid=${SID}; multiContextSession=%7B%22printOpen%22%3A%7B%22value%22%3Afalse%2C%22expiration%22%3A-1%7D%7D`,
+      origin: "https://app.strava.cz",
+      referer: "https://app.strava.cz/",
+      "sec-ch-ua": '"Chromium";v="134", "Not:A-Brand";v="24", "Brave";v="134"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
+      "sec-gpc": "1",
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+    };
+
+    // Prepare payload
+    const payload = {
+      cislo: cantine_number,
+      sid: SID,
+      url: "",
+      lang: "CZ",
+      xlm: finalXlm,
+      ignoreCert: "false",
+    };
+
+    // Make request to save orders
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    console.log(response);
+
+    // Handle response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `API returned error status ${response.status}: ${errorText.substring(
+          0,
+          150
+        )}...`
+      );
+      return {
+        success: false,
+        error: `API returned status ${response.status}`,
+        details: errorText.substring(0, 500),
+      };
+    }
+
+    // Process successful response
+    const responseData = await response.json();
+    return {
+      success: true,
+      message: "Orders successfully saved",
+      data: responseData,
+    };
+  } catch (error) {
+    console.error("Error saving orders:", error);
+    return {
+      success: false,
+      error: error.message || "Unknown error during order saving",
+    };
+  }
+}
+
 /**
  * DATABASE OPERATIONS
  */
@@ -129,8 +317,7 @@ async function makeRequest() {
       "accept-language": "cs-CZ,cs;q=0.9",
       "content-length": "103",
       "content-type": "text/plain;charset=UTF-8",
-      cookie:
-        "NEXT_LOCALE=cs; cislo=7599; jmeno=kroupajan; sid=a4ecc0fb14c70b8ef87da8bcd63ff8e1a98ffa43c00d9a809430abfb80cc020d9bb6adb4ce12bdf2a3efd907eb4b6e4da811984bebd242f137b91ff1b3391f97; multiContextSession=%7B%22printOpen%22%3A%7B%22value%22%3Afalse%2C%22expiration%22%3A-1%7D%7D",
+      cookie: `NEXT_LOCALE=cs; cislo=${cislo}; jmeno=${username}; sid=a4ecc0fb14c70b8ef87da8bcd63ff8e1a98ffa43c00d9a809430abfb80cc020d9bb6adb4ce12bdf2a3efd907eb4b6e4da811984bebd242f137b91ff1b3391f97; multiContextSession=%7B%22printOpen%22%3A%7B%22value%22%3Afalse%2C%22expiration%22%3A-1%7D%7D`,
       origin: "https://app.strava.cz",
       priority: "u=1, i",
       referer: "https://app.strava.cz/",

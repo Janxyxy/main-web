@@ -8,6 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Import routes
 const mealsRoutes = require("./routes/mealsRoutes");
+const obRoutes = require("./routes/obRoutes");
 
 // CORS middleware
 app.use((req, res, next) => {
@@ -24,7 +25,8 @@ app.use((req, res, next) => {
 });
 
 // Use routes
-app.use("/api", mealsRoutes);
+app.use("/api/meals", mealsRoutes);
+app.use("/api/ob", obRoutes);
 
 // Root route
 app.get("/", (req, res) => {
