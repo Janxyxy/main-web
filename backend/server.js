@@ -14,7 +14,7 @@ cron.schedule("0 */6 * * *", async () => {
 
   try {
     // Call your own API endpoint
-    const response = await axios.get(`http://localhost:${port}/api/sync`);
+    const response = await axios.get(`http://localhost:${port}/api/meals/sync`);
     console.log("Sync completed successfully:", response.data);
   } catch (error) {
     console.error("Sync failed:", error.message);

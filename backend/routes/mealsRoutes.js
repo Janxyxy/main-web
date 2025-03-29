@@ -129,16 +129,6 @@ async function saveOrdersHandler(req) {
       };
     }
 
-    // Utility function to escape XML
-    function escapeXml(xml) {
-      return xml
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, '\\"')
-        .replace(/'/g, "&apos;");
-    }
-
     // Build XML payload
     let xmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
 <VFPData>
@@ -174,9 +164,9 @@ async function saveOrdersHandler(req) {
         </xsd:element>
     </xsd:schema>`;
 
-    // Format date function - convert from "YYYY-MM-DD" to "YYYY-MM-DD" (already in right format)
+    // Function to format date (already correct)
     function formatDate(dateStr) {
-      return dateStr; // Already in correct format
+      return dateStr;
     }
 
     // Add order entries to XML
@@ -194,11 +184,12 @@ async function saveOrdersHandler(req) {
     xmlPayload += `
 </VFPData>`;
 
-    // Escape the XML payload
-    const escapedXmlPayload = escapeXml(xmlPayload);
-    finalXlm = '"' + escapedXmlPayload + '"';
+    // Final XML without extra escaping
+    const finalXml = `"${xmlPayload}"`;
 
-    console.log("Escaped XML Payload:", finalXlm);
+    console.log(finalXml);
+
+    console.log("Escaped XML Payload:", finalXml);
 
     const url = "https://app.strava.cz/api/saveOrders";
 
@@ -228,7 +219,7 @@ async function saveOrdersHandler(req) {
       sid: SID,
       url: "",
       lang: "CZ",
-      xlm: finalXlm,
+      xlm: finalXml,
       ignoreCert: "false",
     };
 
@@ -317,7 +308,7 @@ async function makeRequest() {
       "accept-language": "cs-CZ,cs;q=0.9",
       "content-length": "103",
       "content-type": "text/plain;charset=UTF-8",
-      cookie: `NEXT_LOCALE=cs; cislo=${cislo}; jmeno=${username}; sid=a4ecc0fb14c70b8ef87da8bcd63ff8e1a98ffa43c00d9a809430abfb80cc020d9bb6adb4ce12bdf2a3efd907eb4b6e4da811984bebd242f137b91ff1b3391f97; multiContextSession=%7B%22printOpen%22%3A%7B%22value%22%3Afalse%2C%22expiration%22%3A-1%7D%7D`,
+      cookie: `NEXT_LOCALE=cs; cislo=${cantine_number}; jmeno=${username}; sid=a4ecc0fb14c70b8ef87da8bcd63ff8e1a98ffa43c00d9a809430abfb80cc020d9bb6adb4ce12bdf2a3efd907eb4b6e4da811984bebd242f137b91ff1b3391f97; multiContextSession=%7B%22printOpen%22%3A%7B%22value%22%3Afalse%2C%22expiration%22%3A-1%7D%7D`,
       origin: "https://app.strava.cz",
       priority: "u=1, i",
       referer: "https://app.strava.cz/",
